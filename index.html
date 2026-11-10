@@ -24,6 +24,8 @@
   --ga-color-surface-selected: #eef5ee;
   --ga-color-surface-disabled: #e2e4e9;
   --ga-color-surface-action: #1f4e66;
+  --ga-color-surface-action-hover-2: #fae0ce; /* assumed: button hover fill reused for these rows, not confirmed */
+  --ga-color-text-action-hover: #133445;
   --ga-color-border-primary: #6f7687;
   --ga-color-border-tertiary: #cccfd7;
   --ga-color-border-disabled: #cccfd7;
@@ -135,7 +137,10 @@ svg.i.s { width: 16px; height: 16px; }
 .folder-title { font-size: var(--ga-text-md-font-size); line-height: 20px; font-weight: 700; }
 .folder-count { font-size: var(--ga-text-sm-font-size); line-height: 16px; color: var(--ga-color-text-body-secondary); }
 .folder-body { display: grid; gap: 8px; padding-top: 8px; }
-.folder-divider { display: none; height: 1px; background: var(--ga-color-border-tertiary); margin: 4px 0; }
+.folder-divider { display: none; height: 1px; background: var(--ga-color-border-primary); margin: 4px 0; }
+/* hover: folder, workflow and step headers (expandable rows only; steps without a toggle stay static) */
+.folder-head:hover, .wf-head:hover, button.step-head:hover { background: var(--ga-color-surface-action-hover-2); color: var(--ga-color-text-action-hover); }
+.folder-head:hover .folder-count, .wf-head:hover .range, button.step-head:hover .who { color: var(--ga-color-text-action-hover); }
 .folder:has(> .folder-head[aria-expanded="true"]) + .folder-divider { display: block; }
 .head-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
 .head-text { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
