@@ -1,0 +1,423 @@
+<title>Workflow Details</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/*
+  Layout: Approval "Task details" page mock (My tasks > Invoice). Left column holds the
+  Workflow details widget with past workflows (collapsed) above the current workflow (open on load).
+  Single light look on purpose.
+
+*/
+:root {
+  color-scheme: light;
+  --ga-font-family-primary: 'Inter', sans-serif;
+  --ga-color-text-body: #133445;
+  --ga-color-text-body-secondary: #2a6480;
+  --ga-color-text-action: #1f4e66;
+  --ga-color-text-on-action: #fcf0e7;
+  --ga-color-text-disable-selected: #6f7687;
+  --ga-color-text-disabled: #b9b9b9;
+  --ga-color-surface-primary: #ffffff;
+  --ga-color-surface-page: #f2f3f5;
+  --ga-color-surface-selected: #eef5ee;
+  --ga-color-surface-disabled: #e2e4e9;
+  --ga-color-surface-action: #1f4e66;
+  --ga-color-border-primary: #6f7687;
+  --ga-color-border-tertiary: #cccfd7;
+  --ga-color-border-disabled: #cccfd7;
+  --ga-color-border-action: #1f4e66;
+  --ga-color-border-focus: #1f4e66;
+  --ga-color-surface-alert-information: #edf4fe;
+  --ga-color-border-alert-information: #366af6;
+  --ga-color-surface-alert-success: #eef5ee;
+  --ga-color-border-alert-success: #448548;
+  --ga-color-surface-alert-error: #fcf1ee;
+  --ga-color-border-alert-error: #cc453e;
+  --ga-size-spacing-01: 2px;
+  --ga-size-spacing-02: 4px;
+  --ga-size-spacing-03: 8px;
+  --ga-size-spacing-04: 12px;
+  --ga-size-spacing-05: 16px;
+  --ga-size-spacing-06: 24px;
+  --ga-radius-default: 4px;
+  --ga-radius-round: 999px;
+  --ga-size-border-width-sm: 1px;
+  --ga-size-border-width-md: 2px;
+  --ga-text-sm-font-size: 12px;
+  --ga-text-sm-line-height: 16px;
+  --ga-text-md-font-size: 14px;
+  --ga-text-md-line-height: 20px;
+  --ga-text-lg-font-size: 16px;
+  --ga-text-lg-line-height: 24px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--ga-color-surface-page);
+  color: var(--ga-color-text-body);
+  font-family: var(--ga-font-family-primary);
+  font-size: var(--ga-text-md-font-size);
+  line-height: var(--ga-text-md-line-height);
+  letter-spacing: -0.096px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 24px;
+}
+button { font: inherit; letter-spacing: inherit; color: inherit; }
+h1, h2, h3, p { margin: 0; }
+svg.i { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+svg.i.s { width: 16px; height: 16px; }
+:focus-visible { outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus); outline-offset: 2px; border-radius: var(--ga-radius-default); }
+
+.page { max-width: 1480px; margin: 0 auto; }
+
+/* ---- page chrome (context only, not part of the redesign) ---- */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; flex-wrap: wrap; }
+.crumbs { display: flex; align-items: center; gap: 12px; font-size: var(--ga-text-lg-font-size); min-width: 0; flex-wrap: wrap; }
+.crumbs a { color: var(--ga-color-text-action); text-decoration: none; }
+.crumbs b { font-weight: 600; }
+.crumbs .sep { color: var(--ga-color-text-body); }
+.iconbtn { width: 40px; height: 40px; display: grid; place-items: center; background: var(--ga-color-surface-primary); border: 1px solid var(--ga-color-border-action); color: var(--ga-color-text-action); border-radius: var(--ga-radius-default); padding: 0; }
+.iconbtn.plain { border-color: transparent; background: transparent; }
+.btn { height: 40px; padding: 0 16px; background: var(--ga-color-surface-primary); border: 1px solid var(--ga-color-border-action); color: var(--ga-color-text-action); border-radius: var(--ga-radius-default); display: inline-flex; align-items: center; gap: 8px; }
+.btn.primary { background: var(--ga-color-surface-action); color: var(--ga-color-text-on-action); }
+.topright { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.taskhead { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0 12px; flex-wrap: wrap; }
+.taskhead .t { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.taskhead h1 { font-size: var(--ga-text-lg-font-size); line-height: 24px; font-weight: 400; }
+.taskhead h1 b { font-weight: 600; }
+.taskhead small { display: block; font-size: var(--ga-text-sm-font-size); line-height: 16px; color: var(--ga-color-text-body); }
+.taskhead .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.counter { font-size: var(--ga-text-sm-font-size); padding: 0 4px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.left { display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--ga-color-surface-primary); border-radius: var(--ga-radius-default); }
+.lower { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.pane { padding: 16px; min-height: 280px; }
+.pane h2 { font-size: var(--ga-text-md-font-size); font-weight: 700; margin-bottom: 12px; }
+.pane .dim { font-size: var(--ga-text-sm-font-size); line-height: 16px; color: var(--ga-color-text-body-secondary); }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 16px; margin-top: 12px; font-size: var(--ga-text-sm-font-size); line-height: 16px; }
+.kv span { display: block; color: var(--ga-color-text-body-secondary); }
+.kv b { font-weight: 600; font-size: var(--ga-text-md-font-size); }
+.viewer { padding: 12px 16px 16px; }
+.viewer .vh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.viewer .vh h2 { font-size: var(--ga-text-md-font-size); font-weight: 700; }
+.viewer .vh a { font-size: var(--ga-text-sm-font-size); color: var(--ga-color-text-action); }
+.viewer .stage { background: #2a2c2f; padding: 0 12%; display: flex; justify-content: center; }
+.viewer .sheet { background: #fff; width: 100%; padding: 20px; min-height: 520px; display: grid; gap: 10px; align-content: start; }
+.viewer .sheet i { display: block; height: 8px; background: #e6e6e6; border-radius: 2px; }
+.viewer .sheet .big { height: 40px; width: 40%; background: #d9b86a; margin-left: auto; }
+
+/* ---- Workflow details widget ---- */
+.widget { background: var(--ga-color-surface-primary); border-radius: var(--ga-radius-default); padding-bottom: 16px; }
+.w-title { padding: 16px 16px 0; display: grid; gap: 8px; }
+.w-title h2 { font-size: var(--ga-text-md-font-size); line-height: 20px; font-weight: 700; }
+.dates { font-size: var(--ga-text-sm-font-size); line-height: 20px; }
+.dates div { display: flex; }
+.dates dt, .dates dd { margin: 0; }
+.dates dt { width: 144px; flex: none; }
+.w-main { padding: 16px 16px 0; display: grid; gap: 8px; }
+
+/* workflow section (new level above steps) */
+.wf { background: var(--ga-color-surface-primary); border: 1px solid var(--ga-color-border-tertiary); border-radius: var(--ga-radius-default); }
+.wf-head { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; cursor: pointer; border-radius: var(--ga-radius-default); }
+.wf-head:focus-visible { outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus); outline-offset: -3px; }
+.wf-body { padding: 0 8px 8px; display: grid; gap: 4px; }
+.wf-body .meta { display: flex; justify-content: flex-end; align-items: center; gap: 16px; flex-wrap: wrap; padding: 0 0 4px; }
+
+/* "Previous workflows" folder: one level above workflow sections, holds every past workflow */
+.folder-head { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 8px 0 0; cursor: pointer; border-radius: var(--ga-radius-default); }
+.folder-head:focus-visible { outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus); outline-offset: -3px; }
+.folder-title { font-size: var(--ga-text-md-font-size); line-height: 20px; font-weight: 700; }
+.folder-count { font-size: var(--ga-text-sm-font-size); line-height: 16px; color: var(--ga-color-text-body-secondary); }
+.folder-body { display: grid; gap: 8px; padding-top: 8px; }
+.folder-divider { display: none; height: 1px; background: var(--ga-color-border-tertiary); margin: 4px 0; }
+.folder:has(> .folder-head[aria-expanded="true"]) + .folder-divider { display: block; }
+.head-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.head-text { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.wf-title { font-size: var(--ga-text-lg-font-size); line-height: 24px; font-weight: 700; }
+.range { font-size: var(--ga-text-md-font-size); line-height: 24px; color: var(--ga-color-text-body-secondary); }
+.chev { width: 40px; height: 40px; display: grid; place-items: center; flex: none; }
+.chev .i { transition: none; }
+[aria-expanded="true"] > .chev .i { transform: rotate(180deg); }
+
+/* steps */
+.steps { display: grid; gap: 4px; }
+.step { background: var(--ga-color-surface-primary); border: 1px solid var(--ga-color-border-tertiary); border-radius: var(--ga-radius-default); }
+.step.current { background: var(--ga-color-surface-selected); }
+.step.off { background: var(--ga-color-surface-disabled); }
+/* every step in a previous workflow uses the disabled fill, whatever its status */
+.folder .step { background: var(--ga-color-surface-disabled); }
+.step-head { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; border-radius: var(--ga-radius-default); }
+button.step-head { cursor: pointer; }
+.step-head:focus-visible { outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus); outline-offset: -3px; }
+.step.off .chev { color: var(--ga-color-text-disabled); }
+.step-text { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.step-text b { font-weight: 700; }
+.step-text .who { color: var(--ga-color-text-body); line-height: 24px; }
+.step-body { padding: 0 8px 8px; display: grid; gap: 8px; }
+.person { color: var(--ga-color-text-body-secondary); text-decoration: none; }
+
+/* tag */
+.tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 4px 2px 2px; border: 1px solid; border-radius: var(--ga-radius-round); font-size: var(--ga-text-sm-font-size); line-height: 16px; letter-spacing: 0; white-space: nowrap; flex: none; max-width: 100%; }
+.tag > span { padding-inline: 4px; display: inline-flex; align-items: center; gap: 4px; }
+.tag.info { background: var(--ga-color-surface-alert-information); border-color: var(--ga-color-border-alert-information); }
+.tag.ok { background: var(--ga-color-surface-alert-success); border-color: var(--ga-color-border-alert-success); }
+.tag.err { background: var(--ga-color-surface-alert-error); border-color: var(--ga-color-border-alert-error); }
+.tag.off { background: var(--ga-color-surface-disabled); border-color: var(--ga-color-border-disabled); color: var(--ga-color-text-disable-selected); }
+
+/* checkbox */
+.check { display: inline-flex; align-items: center; gap: 8px; font-size: var(--ga-text-md-font-size); cursor: pointer; }
+.check input { appearance: none; margin: 0; width: 16px; height: 16px; border: 1px solid var(--ga-color-border-primary); border-radius: var(--ga-radius-default); background: var(--ga-color-surface-primary); display: grid; place-content: center; cursor: pointer; }
+.check input:checked { background: var(--ga-color-surface-action); border-color: var(--ga-color-surface-action); }
+.check input:checked::after { content: ""; width: 8px; height: 4px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px, -1px); }
+
+/* event card */
+.ev { background: var(--ga-color-surface-primary); border: 1px solid var(--ga-color-border-tertiary); border-radius: var(--ga-radius-default); padding: 4px 8px; display: grid; gap: 2px; font-size: var(--ga-text-sm-font-size); line-height: 16px; letter-spacing: 0; }
+.ev-top { display: flex; justify-content: space-between; gap: 8px; }
+.ev-top b { font-weight: 600; }
+.ev-top time { color: var(--ga-color-text-body-secondary); white-space: nowrap; }
+.ev-line { display: flex; align-items: center; gap: 8px; min-height: 20px; color: var(--ga-color-text-body-secondary); }
+.ev-line b { font-weight: 600; }
+.ev-line .plain { color: var(--ga-color-text-body); }
+.ev-text { padding: 0 24px; min-height: 20px; display: flex; align-items: center; }
+.avatar16 { width: 16px; height: 16px; border-radius: 50%; background: #cfd6dc; display: grid; place-items: center; overflow: hidden; flex: none; color: #7b8791; }
+.avatar16 svg { width: 12px; height: 12px; fill: currentColor; stroke: none; margin-top: 3px; }
+
+/* current workflow step panel */
+.cur { gap: 8px; padding-block: 8px; }
+.cur .grid { display: grid; grid-template-columns: 192px minmax(0, 1fr); gap: 8px 8px; align-items: center; }
+.cur .grid .h { font-weight: 600; color: var(--ga-color-text-body-secondary); }
+.cur .who { display: flex; align-items: center; gap: 8px; }
+.avatar24 { width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--ga-color-border-tertiary); background: var(--ga-color-surface-primary); display: grid; place-items: center; font-weight: 700; font-size: 12px; line-height: 16px; flex: none; }
+
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .lower { grid-template-columns: minmax(0, 1fr); }
+  .cur .grid { grid-template-columns: minmax(0, 1fr); }
+  .cur .grid .h.r { display: none; }
+  .dates dt { width: 120px; }
+}
+</style>
+
+<div class="page">
+  <header class="topbar">
+    <div class="crumbs">
+      <button class="iconbtn" aria-label="Menu"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <a href="#" data-noop>Services</a><span class="sep">/</span><a href="#" data-noop>Approval</a><span class="sep">/</span><b>My tasks</b>
+    </div>
+    <div class="topright">
+      <button class="btn" style="min-width:200px;justify-content:space-between">VNA | ERP <svg class="i s" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <button class="btn">Feedback</button>
+    </div>
+  </header>
+
+  <div class="taskhead">
+    <div class="t">
+      <button class="iconbtn plain" aria-label="Back"><svg class="i" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg></button>
+      <div><h1><b>Invoice</b> - Office furniture → VNA | ERP</h1><small>Received from source system</small></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary">Approve...</button>
+      <button class="btn">Reject...</button>
+      <button class="btn">Other... <svg class="i s" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <span class="counter">Task 1 / 172</span>
+      <button class="iconbtn" aria-label="Previous task"><svg class="i" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="iconbtn" aria-label="Next task"><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="left">
+      <section class="widget" aria-labelledby="wd-title">
+        <div class="w-title">
+          <h2 id="wd-title">Workflow details</h2>
+          <dl class="dates" style="margin:0">
+            <div><dt>Document due date</dt><dd>14/06/2026</dd></div>
+            <div><dt>Task due date</dt><dd>10/06/2026</dd></div>
+          </dl>
+        </div>
+        <div class="w-main" id="workflows"></div>
+      </section>
+
+      <div class="lower">
+        <section class="card pane">
+          <h2>Comments <span class="tag info" style="padding:0 6px">1</span></h2>
+          <p class="dim">Anca Buciu · Reassigned · 21/09/2026 10:00</p>
+          <p style="font-size:12px;margin-top:4px">test</p>
+        </section>
+        <section class="card pane">
+          <h2>Invoice details</h2>
+          <p class="dim">Description</p>
+          <p style="font-weight:600">AB240730-1503 - New task for Knut 2</p>
+          <div class="kv">
+            <div><span>Branch</span><b>VNA | ERP</b></div>
+            <div><span>Supplier name</span><b>Office furniture</b></div>
+            <div><span>Supplier number</span><b>50000</b></div>
+            <div><span>Invoice number</span><b>AB240730-1503</b></div>
+            <div><span>Invoice date</span><b>30/07/2024</b></div>
+            <div><span>Amount</span><b>0.00 NOK</b></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card viewer" aria-label="Attachment viewer">
+      <div class="vh"><h2>Attachment viewer</h2><a href="#" data-noop>Download all</a></div>
+      <div class="stage"><div class="sheet" aria-hidden="true"><i class="big"></i><i style="width:60%"></i><i></i><i style="width:85%"></i><i style="width:70%"></i><i></i><i style="width:50%"></i></div></div>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var ICON = {
+    chev: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
+    check: '<svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+    info: '<svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    alert: '<svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86z"/><path d="M12 8v4M12 16h.01"/></svg>',
+    user: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M3 22c0-5 4-8 9-8s9 3 9 8z"/></svg>'
+  };
+  var uid = 0;
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+  function p(n) { return '<a class="person" href="#" data-noop>' + esc(n) + '</a>'; }
+  function list(names) {
+    if (names.length === 1) return p(names[0]);
+    return names.slice(0, -1).map(p).join(', ') + ' <span class="plain" style="color:var(--ga-color-text-body)">and</span> ' + p(names[names.length - 1]);
+  }
+  function tag(kind, icon, text) {
+    return '<span class="tag ' + kind + '"><span>' + (icon ? ICON[icon] : '') + esc(text) + '</span></span>';
+  }
+  function ev(e) {
+    var line = '';
+    if (e.line) {
+      line = '<div class="ev-line">' + (e.noAvatar ? '' : '<span class="avatar16">' + ICON.user + '</span>') + e.line + '</div>';
+    }
+    return '<div class="ev"><div class="ev-top"><b>' + esc(e.title) + '</b><time>' + esc(e.time) + '</time></div>' + line +
+      (e.text ? '<div class="ev-text">' + esc(e.text) + '</div>' : '') + '</div>';
+  }
+  function current(c) {
+    var rows = c.approvers.map(function (a) {
+      return '<div class="who"><span class="avatar24">' + a.i + '</span>' + esc(a.n) + '</div><div>' + esc(a.r) + '</div>';
+    }).join('');
+    return '<div class="ev cur"><div class="ev-top"><b>Current workflow step</b><span style="color:var(--ga-color-text-body-secondary)">Awaiting approval</span></div>' +
+      '<div class="grid"><div class="h">Current approvers</div><div class="h r">Reason</div>' + rows + '</div></div>';
+  }
+  function step(s) {
+    var cls = 'step' + (s.kind === 'current' ? ' current' : '') + (s.kind === 'idle' || s.kind === 'error' ? ' off' : '');
+    var who;
+    if (s.kind === 'error') who = esc(s.text);
+    else who = s.verb + ' ' + list(s.names);
+    var tg;
+    if (s.kind === 'done') tg = tag('ok', 'check', s.date);
+    else if (s.kind === 'rejected') tg = tag('err', 'alert', s.date);
+    else if (s.kind === 'error') tg = tag('err', 'alert', 'Configuration error');
+    else if (s.kind === 'current') tg = tag('info', 'info', 'In process');
+    else tg = tag('off', '', 'Not started');
+    var text = '<div class="head-main"><div class="step-text"><b>Step ' + s.n + '</b><span class="who">' + who + '</span></div>' + tg + '</div>';
+    if (s.kind === 'idle' || s.kind === 'error') {
+      return '<div class="' + cls + '"><div class="step-head"><span class="chev">' + (s.kind === 'idle' ? ICON.chev : '') + '</span>' + text + '</div></div>';
+    }
+    var id = 'st' + (++uid);
+    var open = !!s.open;
+    var body = (s.events || []).map(ev).join('') + (s.current ? current(s.current) : '');
+    return '<div class="' + cls + '"><button class="step-head" aria-expanded="' + open + '" aria-controls="' + id + '"><span class="chev">' + ICON.chev + '</span>' + text + '</button>' +
+      '<div class="step-body" id="' + id + '"' + (open ? '' : ' hidden') + '>' + body + '</div></div>';
+  }
+
+  var AV = '';
+  var workflows = [
+    {
+      title: 'Workflow 1', range: '02/07/26 – 03/07/26', tag: tag('off', '', 'Cancelled'), open: false,
+      steps: [
+        { n: 1, kind: 'done', verb: 'Approved by', names: ['Kari Stede'], date: '02/07/26', events: [
+          { title: 'Comment', time: '02/07/2026 09:12', line: '<b>Kari Stede</b>', text: 'Looks fine from my side.' } ] },
+        { n: 2, kind: 'error', text: 'This step is mandatory but no approvers were found' },
+        { n: 3, kind: 'idle', verb: 'Task for', names: ['Anna Hansen', 'Tim Bobsen'] }
+      ],
+      tail: [
+        { title: 'Document was edited', time: '03/07/2026 10:05', noAvatar: true, line: '<span class="plain" style="padding-left:24px;margin-left:-24px">From: Source system</span>' },
+        { title: 'Cancelled', time: '03/07/2026 10:07', noAvatar: true, line: '<span class="plain" style="padding-left:24px;margin-left:-24px">From: Source system</span>' }
+      ]
+    },
+    {
+      title: 'Workflow 2', range: '20/07/26 – 28/07/26', tag: tag('err', 'alert', 'Rejected'), open: false,
+      steps: [
+        { n: 1, kind: 'done', verb: 'Approved by', names: ['Kari Stede'], date: '21/07/26', events: [
+          { title: 'Comment', time: '21/07/2026 13:40', line: '<b>Kari Stede</b>', text: 'Approved, please check the cost unit.' } ] },
+        { n: 2, kind: 'rejected', verb: 'Rejected by', names: ['Neil Olsen', 'Bjarne Larsen'], date: '28/07/26', events: [
+          { title: 'Comment', time: '27/07/2026 16:02', line: '<b>Neil Olsen</b>', text: 'Which project is this for?' },
+          { title: 'Comment', time: '28/07/2026 08:55', line: '<b>Bjarne Larsen</b>', text: 'Wrong cost unit. Please correct and resubmit.' } ] },
+        { n: 3, kind: 'idle', verb: 'Task for', names: ['Anna Hansen', 'Tim Bobsen'] }
+      ]
+    },
+    {
+      title: 'Workflow 3', range: 'Started 05/08/26', tag: tag('info', 'info', 'In process'), open: true, isCurrent: true,
+      steps: [
+        { n: 1, kind: 'done', verb: 'Approved by', names: ['Kari Stede'], date: '09/08/26', events: [
+          { title: 'Comment', time: '09/08/2026 09:30', line: '<b>Kari Stede</b>', text: 'Approved.' } ] },
+        { n: 2, kind: 'done', verb: 'Approved by', names: ['Neil Olsen', 'Bjarne Larsen'], date: '10/08/26', events: [
+          { title: 'Comment', time: '10/08/2026 14:12', line: '<b>Neil Olsen</b>', text: 'Cost unit is correct now.' } ] },
+        { n: 3, kind: 'current', verb: 'Pending approval by', names: ['Anna Bertilsen', 'Cathrine Paulsen', 'Jon Elvevåg'], open: true, events: [
+          { title: 'Comment', time: '11/08/2026 11:40', line: '<b>Kasperina Jørgensen</b>', text: 'Can we double check this one?' },
+          { title: 'Sent to review', time: '11/08/2026 11:43', line: '<b>Espen Vik</b> <span class="plain">sent task to be reviewed by</span> <b>Oda Lauritz</b>', text: 'Please have a look.' },
+          { title: 'Comment', time: '11/08/2026 14:30', line: '<b>Kasperina Jørgensen</b>', text: 'Interesting' },
+          { title: 'Reviewed', time: '11/08/2026 15:22', line: '<b>Oda Lauritz</b> reviewed task', text: 'This one is OK' },
+          { title: 'Comment', time: '11/08/2026 16:10', line: '<b>Kasperina Jørgensen</b>', text: 'Ok to be approved' }
+        ], current: { approvers: [
+          { i: 'AB', n: 'Anna Bertilsen', r: 'This user is defined as directly responsible for approving the document' },
+          { i: 'CP', n: 'Cathrine Paulsen', r: 'This user is defined as directly responsible for approving the document' },
+          { i: 'JE', n: 'Jon Elvevåg', r: 'Anna Bertilsen re-assigned the task from Kasperina Jørgensen to Jon Elvevåg.' } ] } },
+        { n: 4, kind: 'idle', verb: 'Task for', names: ['Anna Hansen', 'Tim Bobsen'] },
+        { n: 5, kind: 'idle', verb: 'Task for', names: ['Roger Thomas'] }
+      ]
+    }
+  ];
+
+  var root = document.getElementById('workflows');
+  function renderWf(w) {
+    var id = 'wf' + (++uid);
+    var meta = w.isCurrent
+      ? '<div class="meta"><span class="tag info"><span>' + ICON.info + 'Four eyes approval active</span></span>' +
+        '<label class="check"><input type="checkbox" id="hide-skipped"> Hide skipped steps</label></div>'
+      : '';
+    return '<section class="wf"><button class="wf-head" aria-expanded="' + w.open + '" aria-controls="' + id + '">' +
+      '<span class="chev">' + ICON.chev + '</span>' +
+      '<span class="head-main"><span class="head-text"><span class="wf-title">' + esc(w.title) + '</span><span class="range">' + esc(w.range) + '</span></span>' + w.tag + '</span></button>' +
+      '<div class="wf-body" id="' + id + '"' + (w.open ? '' : ' hidden') + '>' + meta +
+      '<div class="steps">' + w.steps.map(step).join('') + '</div>' +
+      (w.tail ? '<div class="steps">' + w.tail.map(ev).join('') + '</div>' : '') + '</div></section>';
+  }
+
+  // Everything except the latest workflow goes in the folder; the latest is shown on its own, open.
+  var previous = workflows.slice(0, -1);
+  var latest = workflows[workflows.length - 1];
+  var html = '';
+  if (previous.length) {
+    var fid = 'fd' + (++uid);
+    html += '<section class="folder"><button class="folder-head" aria-expanded="false" aria-controls="' + fid + '">' +
+      '<span class="chev">' + ICON.chev + '</span><span class="folder-title">Previous workflows</span>' +
+      '<span class="folder-count">' + previous.length + '</span></button>' +
+      '<div class="folder-body" id="' + fid + '" hidden>' + previous.map(renderWf).join('') + '</div></section><div class="folder-divider" role="separator"></div>';
+  }
+  html += renderWf(latest);
+  root.innerHTML = html;
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-noop]');
+    if (a) { e.preventDefault(); return; }
+    var b = e.target.closest('button[aria-controls]');
+    if (!b) return;
+    var open = b.getAttribute('aria-expanded') === 'true';
+    b.setAttribute('aria-expanded', String(!open));
+    document.getElementById(b.getAttribute('aria-controls')).hidden = open;
+  });
+})();
+</script>
