@@ -143,8 +143,9 @@ svg.i.s { width: 16px; height: 16px; }
 .folder-body { display: grid; gap: 8px; padding-top: 8px; }
 .folder-divider { display: none; height: 1px; background: var(--ga-color-border-primary); margin: 4px 0; }
 /* hover: folder, workflow and step headers (expandable rows only; steps without a toggle stay static) */
-.folder-head:hover, .wf-head:hover, button.step-head:hover { background: var(--ga-color-surface-action-hover-2); color: var(--ga-color-text-action-hover); }
-.folder-head:hover .folder-count, .wf-head:hover .range, button.step-head:hover .who { color: var(--ga-color-text-action-hover); }
+/* workflow and step: the whole component highlights (header + body); a hovered step does not also highlight its workflow */
+.folder-head:hover, .wf:hover:not(:has(.step:hover)), .step:has(> button.step-head):hover { background: var(--ga-color-surface-action-hover-2); color: var(--ga-color-text-action-hover); }
+.folder-head:hover .folder-count, .wf:hover:not(:has(.step:hover)) .range, .step:has(> button.step-head):hover .who { color: var(--ga-color-text-action-hover); }
 .folder:has(> .folder-head[aria-expanded="true"]) + .folder-divider { display: block; }
 .head-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
 .head-text { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
@@ -330,7 +331,7 @@ button.step-head { cursor: pointer; }
     else if (s.kind === 'error') tg = tag('err', 'alert', 'Configuration error');
     else if (s.kind === 'current') tg = tag('info', 'info', 'In process');
     else tg = tag('off', '', 'Not started');
-    var text = '<div class="head-main"><div class="step-text"><b>Step ' + s.n + '</b><span class="who">' + who + '</span></div>' + tg + '</div>';
+    var text = '<div class="head-main"><div class="step-text"><b>' + (s.title || 'Step ' + s.n) + '</b><span class="who">' + who + '</span></div>' + tg + '</div>';
     if (s.kind === 'idle' || s.kind === 'error') {
       return '<div class="' + cls + '"><div class="step-head"><span class="chev">' + (s.kind === 'idle' ? ICON.chev : '') + '</span>' + text + '</div></div>';
     }
@@ -372,20 +373,19 @@ button.step-head { cursor: pointer; }
       steps: [
         { n: 1, kind: 'done', verb: 'Approved by', names: ['Kari Stede'], date: '09/08/26', events: [
           { title: 'Comment', time: '09/08/2026 09:30', line: '<b>Kari Stede</b>', text: 'Approved.' } ] },
-        { n: 2, kind: 'done', verb: 'Approved by', names: ['Neil Olsen', 'Bjarne Larsen'], date: '10/08/26', events: [
-          { title: 'Comment', time: '10/08/2026 14:12', line: '<b>Neil Olsen</b>', text: 'Cost unit is correct now.' } ] },
-        { n: 3, kind: 'current', verb: 'Pending approval by', names: ['Anna Bertilsen', 'Cathrine Paulsen', 'Jon Elvevåg'], open: true, events: [
+        { n: 2, kind: 'done', verb: 'Approved by', names: ['Kari Stede'], date: '10/08/26', events: [
+          { title: 'Comment', time: '10/08/2026 14:12', line: '<b>Kari Stede</b>', text: 'Cost unit is correct now.' } ] },
+        { n: 3, kind: 'done', verb: 'Approved by', names: ['Kari Stede'], date: '11/08/26', events: [
           { title: 'Comment', time: '11/08/2026 11:40', line: '<b>Kasperina Jørgensen</b>', text: 'Can we double check this one?' },
           { title: 'Sent to review', time: '11/08/2026 11:43', line: '<b>Espen Vik</b> <span class="plain">sent task to be reviewed by</span> <b>Oda Lauritz</b>', text: 'Please have a look.' },
           { title: 'Comment', time: '11/08/2026 14:30', line: '<b>Kasperina Jørgensen</b>', text: 'Interesting' },
           { title: 'Reviewed', time: '11/08/2026 15:22', line: '<b>Oda Lauritz</b> reviewed task', text: 'This one is OK' },
           { title: 'Comment', time: '11/08/2026 16:10', line: '<b>Kasperina Jørgensen</b>', text: 'Ok to be approved' }
-        ], current: { approvers: [
-          { i: 'AB', n: 'Anna Bertilsen', r: 'This user is defined as directly responsible for approving the document' },
-          { i: 'CP', n: 'Cathrine Paulsen', r: 'This user is defined as directly responsible for approving the document' },
-          { i: 'JE', n: 'Jon Elvevåg', r: 'Anna Bertilsen re-assigned the task from Kasperina Jørgensen to Jon Elvevåg.' } ] } },
-        { n: 4, kind: 'idle', verb: 'Task for', names: ['Anna Hansen', 'Tim Bobsen'] },
-        { n: 5, kind: 'idle', verb: 'Task for', names: ['Roger Thomas'] }
+        ] },
+        /* Added at the end of the workflow when four eyes approval comes into effect (one person approved every step). */
+        { title: 'Four eyes approval', kind: 'current', verb: 'Pending approval by', names: ['Anna Bertilsen'], open: true,
+          current: { approvers: [
+            { i: 'AB', n: 'Anna Bertilsen', r: 'This user is defined as a fallback user for approving the document (based on the 4-eyes approval configuration).' } ] } }
       ]
     }
   ];
