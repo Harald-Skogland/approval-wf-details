@@ -122,7 +122,9 @@ svg.i.s { width: 16px; height: 16px; }
 .widget { background: var(--ga-color-surface-primary); border-radius: var(--ga-radius-default); padding-bottom: 16px; }
 .w-title { padding: 16px 16px 0; display: grid; gap: 8px; }
 .w-title h2 { font-size: var(--ga-text-md-font-size); line-height: 20px; font-weight: 700; }
-.dates { font-size: var(--ga-text-sm-font-size); line-height: 20px; }
+.dates { font-size: var(--ga-text-sm-font-size); line-height: 20px; flex: 1 1 220px; }
+.w-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+.w-opts { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .dates div { display: flex; }
 .dates dt, .dates dd { margin: 0; }
 .dates dt { width: 144px; flex: none; }
@@ -133,7 +135,7 @@ svg.i.s { width: 16px; height: 16px; }
 .wf-head { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px; cursor: pointer; border-radius: var(--ga-radius-default); }
 .wf-head:focus-visible { outline: var(--ga-size-border-width-md) solid var(--ga-color-border-focus); outline-offset: -3px; }
 .wf-body { padding: 0 8px 8px; display: grid; gap: 4px; }
-.wf-body .meta { display: flex; justify-content: flex-end; align-items: center; gap: 16px; flex-wrap: wrap; padding: 0 0 4px; }
+.meta { display: flex; justify-content: flex-end; align-items: center; gap: 16px; flex-wrap: wrap; padding: 0 0 4px; }
 
 /* "Previous workflows" folder: one level above workflow sections, holds every past workflow */
 .folder-head { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 8px 0 9px; cursor: pointer; border-radius: var(--ga-radius-default); }
@@ -144,9 +146,9 @@ svg.i.s { width: 16px; height: 16px; }
 .folder-divider { display: none; height: 1px; background: var(--ga-color-border-primary); margin: 4px 0; }
 /* hover: folder, workflow and step headers (expandable rows only; steps without a toggle stay static) */
 /* workflow and step: the whole component highlights (header + body); a hovered step does not also highlight its workflow */
-.folder-head:hover, .wf:hover:not(:has(.step:hover)), .step:has(> button.step-head):hover { background: var(--ga-color-surface-action-hover-2); color: var(--ga-color-text-action-hover); }
-.folder-head:hover .folder-count, .wf:hover:not(:has(.step:hover)) .range, .step:has(> button.step-head):hover .who { color: var(--ga-color-text-action-hover); }
-.folder:has(> .folder-head[aria-expanded="true"]) + .folder-divider { display: block; }
+.folder-head:hover, .wf:hover:not(:has(.step:hover)), .step:has(> button.step-head):hover:not(:has(.step:hover)) { background: var(--ga-color-surface-action-hover-2); color: var(--ga-color-text-action-hover); }
+.folder-head:hover .folder-count, .wf:hover:not(:has(.step:hover)) .range, .step:has(> button.step-head):hover:not(:has(.step:hover)) .who { color: var(--ga-color-text-action-hover); }
+.folder:has(> .step-head[aria-expanded="true"]) + .folder-divider { display: block; }
 .head-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
 .head-text { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
 .wf-title { font-size: var(--ga-text-lg-font-size); line-height: 24px; font-weight: 700; }
@@ -249,10 +251,16 @@ button.step-head { cursor: pointer; }
       <section class="widget" aria-labelledby="wd-title">
         <div class="w-title">
           <h2 id="wd-title">Workflow details</h2>
-          <dl class="dates" style="margin:0">
-            <div><dt>Document due date</dt><dd>14/06/2026</dd></div>
-            <div><dt>Task due date</dt><dd>10/06/2026</dd></div>
-          </dl>
+          <div class="w-row">
+            <dl class="dates" style="margin:0">
+              <div><dt>Document due date</dt><dd>14/06/2026</dd></div>
+              <div><dt>Task due date</dt><dd>10/06/2026</dd></div>
+            </dl>
+            <div class="w-opts">
+              <span class="tag info"><span><svg class="i s" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>Four eyes approval active</span></span>
+              <label class="check"><input type="checkbox" id="hide-skipped"> Hide skipped steps</label>
+            </div>
+          </div>
         </div>
         <div class="w-main" id="workflows"></div>
       </section>
@@ -393,30 +401,36 @@ button.step-head { cursor: pointer; }
   var root = document.getElementById('workflows');
   function renderWf(w) {
     var id = 'wf' + (++uid);
-    var meta = w.isCurrent
-      ? '<div class="meta"><span class="tag info"><span>' + ICON.info + 'Four eyes approval active</span></span>' +
-        '<label class="check"><input type="checkbox" id="hide-skipped"> Hide skipped steps</label></div>'
-      : '';
+    // The current workflow has no wrapper or header of its own: its steps are shown directly.
+    if (w.isCurrent) return '<div class="current-wf"><div class="steps">' + w.steps.map(step).join('') + '</div></div>';
     return '<section class="wf"><button class="wf-head" aria-expanded="' + w.open + '" aria-controls="' + id + '">' +
       '<span class="chev">' + ICON.chev + '</span>' +
       '<span class="head-main"><span class="head-text"><span class="wf-title">' + esc(w.title) + '</span><span class="range">' + esc(w.range) + '</span></span>' + w.tag + '</span></button>' +
-      '<div class="wf-body" id="' + id + '"' + (w.open ? '' : ' hidden') + '>' + meta +
+      '<div class="wf-body" id="' + id + '"' + (w.open ? '' : ' hidden') + '>' +
       '<div class="steps">' + w.steps.map(step).join('') + '</div>' +
       (w.tail ? '<div class="steps">' + w.tail.map(ev).join('') + '</div>' : '') + '</div></section>';
   }
 
-  // Everything except the latest workflow goes in the folder; the latest is shown on its own, open.
+  // Steps of every earlier workflow go into one flat "Previous steps" folder (no workflow wrappers).
+  // The latest workflow's steps are shown directly below it.
   var previous = workflows.slice(0, -1);
   var latest = workflows[workflows.length - 1];
   var html = '';
-  if (previous.length) {
+  var prevItems = [];
+  var prevCount = 0;
+  previous.forEach(function (w) {
+    w.steps.forEach(function (s) { prevItems.push(step(s)); prevCount++; });
+    (w.tail || []).forEach(function (e) { prevItems.push(ev(e)); });
+  });
+  if (prevItems.length) {
     var fid = 'fd' + (++uid);
-    html += '<section class="folder"><button class="folder-head" aria-expanded="false" aria-controls="' + fid + '">' +
-      '<span class="chev">' + ICON.chev + '</span><span class="folder-title">Previous workflows</span>' +
-      '<span class="folder-count">' + previous.length + '</span></button>' +
-      '<div class="folder-body" id="' + fid + '" hidden>' + previous.map(renderWf).join('') + '</div></section><div class="folder-divider" role="separator"></div>';
+    html += '<div class="step folder"><button class="step-head" aria-expanded="false" aria-controls="' + fid + '">' +
+      '<span class="chev">' + ICON.chev + '</span><div class="head-main"><div class="step-text"><b>Previous steps</b>' +
+      '<span class="who">' + prevCount + ' steps</span></div></div></button>' +
+      '<div class="step-body" id="' + fid + '" hidden>' + prevItems.join('') + '</div></div>' +
+      '<div class="folder-divider" role="separator"></div>';
   }
-  html += renderWf(latest);
+  html += '<div class="current-wf"><div class="steps">' + latest.steps.map(step).join('') + '</div></div>';
   root.innerHTML = html;
 
   document.addEventListener('click', function (e) {
